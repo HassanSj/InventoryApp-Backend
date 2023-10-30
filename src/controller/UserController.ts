@@ -6,8 +6,7 @@ const jwt = require("jsonwebtoken");
 
 function generateToken(user: any) {
   const payload = {
-    userId: user.id,
-    userType: user.userType,
+    id: user.id,
   };
   const token = jwt.sign(payload, "abcdef", { expiresIn: "1h" });
 
@@ -86,4 +85,39 @@ export default {
   //     return res.status(500).send({ message: "Internal server error" });
   //   }
   // },
+
+  getUserDetails: async (req: Request, res: Response) => {
+    try {
+      const token = req.headers.authorization;
+      if (!token) {
+        return res.status(401).json({ message: "No token provided" });
+      }
+      const tokenValue = token.replace("Bearer ", "");
+      jwt.verify(tokenValue, "abcdef", async (err: any, decoded: any) => {
+        if (err) {
+          return res.status(401).json({ message: "Invalid token" });
+        }
+        console.log('Decoded Token:', decoded);
+        const userId = decoded.id;
+        const userRepository = getRepository(User);
+        try {
+          const userEntity = await userRepository.findOne({
+            where: { id: userId },
+          });
+          if (!userEntity) {
+            return res.status(404).json({ message: "User not found" });
+          }
+          return res.status(200).json(userEntity);
+        } catch (error) {
+          console.error(error);
+          return res
+            .status(500)
+            .json({ message: "Error fetching user details" });
+        }
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Error fetching user details" });
+    }
+  },
 };
