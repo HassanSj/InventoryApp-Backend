@@ -4,10 +4,6 @@ import User from "../models/User";
 import Product from "../models/Product";
 import Category from "../models/Category";
 
-// import Book from "./modules/Authentication/models/Books";
-
-
-
 export default createConnection({
     type: "postgres",
     host: "castor.db.elephantsql.com",
